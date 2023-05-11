@@ -223,7 +223,7 @@ HKA_BOOL FTPConn::send_file_(HKA_S32 file_fd)
         }
 
         //  发送文件的大小
-        sprintf((char *)&send_buffer_[0], "%ld", file_size);
+        sprintf((char *)&send_buffer_[0], "%lld", file_size);
         int send_size = send_();        //  将send_buffer_内容发送给客户端
         if (send_size < 0)
         {
@@ -232,7 +232,7 @@ HKA_BOOL FTPConn::send_file_(HKA_S32 file_fd)
         
         //  发送文件内容
         int block_size = 0;
-        const int fix_size = 65536;
+        // const int fix_size = 65536;
         char *client_ip = inet_ntoa(client_addr_.sin_addr);
         while(file_size > 0)
         {

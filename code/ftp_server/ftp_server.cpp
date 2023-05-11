@@ -104,7 +104,7 @@ HKA_STATUS FTPServer::init_socket_()
     }
 
     // 将listen_fd_添加到epoll监听事件中 (I/O多路复用)
-    ret = epoller_->add_fd(listen_fd_, EPOLLIN | EPOLLET | EPOLLRDHUP);
+    ret = epoller_->add_fd(listen_fd_, EPOLLIN | EPOLLRDHUP);
     if (ret < 0)
     {
         close(listen_fd_);
@@ -144,7 +144,11 @@ HKA_VOID FTPServer::start()
             if (curfd == listen_fd_)                //  有新的客户端连接
             {
                 deal_listen_();     //  处理新的客户端连接
-            }        
+            }   
+            else if (events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))    //  有异常关闭与客户端的连接
+            {
+                close_conn_(&clients_[curfd]);  //  关闭客户端连接
+            }     
             else if (events & EPOLLOUT)     //  服务器发送数据（epoll监听到写事件）
             {
                 deal_write_(&clients_[curfd]);  //  处理写
@@ -155,10 +159,6 @@ HKA_VOID FTPServer::start()
                 deal_read_(&clients_[curfd]);   //  处理读
                 //on_read_(&clients_[curfd]);
                 
-            }
-            else if (events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))    //  有异常关闭与客户端的连接
-            {
-                close_conn_(&clients_[curfd]);  //  关闭客户端连接
             }
             else
             {
@@ -226,6 +226,7 @@ HKA_VOID FTPServer::add_client_(HKA_S32 fd, sockaddr_in addr)
 HKA_VOID FTPServer::deal_read_(FTPConn *client)                   
 {
     assert(client);
+    extent_time(client);        //  更新超时时间
 
     //  将客户端请求任务加入线程池
     thread_pool_->append(std::bind(&FTPServer::on_read_, this, client));   
@@ -264,7 +265,7 @@ HKA_VOID FTPServer::on_read_(FTPConn *client)       //  在子线程中处理
         close_conn_(client);
         return;
     }
-    extent_time(client);
+
     client->process_();
     epoller_->mod_fd(client->get_fd_(), EPOLLOUT);
 }

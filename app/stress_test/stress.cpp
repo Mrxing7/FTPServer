@@ -68,34 +68,14 @@ bool write_nbytes(int sock_fd, const char* buffer, int len)
 }
 
 //  从服务器读取数据 (即接收服务器传输的文件)  
-bool read_file(int sock_fd, char * file_name)
+bool read_file(int sock_fd, char *buffer, int len)
 {
-    int recv_size = 0;
-    char normal_data[SEDN_RECV_BUF_SIZE];
     char file_length[FILE_SIZE_LENGTH];
-
-    bzero(normal_data, SEDN_RECV_BUF_SIZE);
-    bzero(file_length, FILE_SIZE_LENGTH);
-
-    //  打开（创建）文件
-    FILE *file_fp = fopen(file_name, "w+");
-    if (!file_fp)
-    {
-        printf("Fail to create file !!!\n");
-        return 0;
-    }
-
-    //  发送文件名
-    int send_size = send(sock_fd, file_name, strlen(file_name), 0);
-    if (send_size < 0)
-    {
-        printf("Error send !!!\n");
-        return 0;
-    }
+    memset(buffer, '\0', len);
 
     //  判断服务器是否有该文件，接收到"-1"为未找到文件，否则接收到为文件的大小
     bzero(file_length, FILE_SIZE_LENGTH);
-    recv_size = recv(sock_fd, file_length, FILE_SIZE_LENGTH, 0);
+    int recv_size = recv(sock_fd, file_length, FILE_SIZE_LENGTH, 0);
     if (!strcmp(file_length, "-1"))
     {
         printf("File name not found!!\n");
@@ -106,27 +86,16 @@ bool read_file(int sock_fd, char * file_name)
     file_size = atoi(file_length);  
     recv_size = 0;
     printf("file_size: %d\n", file_size);
-    //  计算文件下载的花费时间
-    timespec start, end;
     
-    //  接收文件内容
-    printf("File downloading...\n");
-    //printf(YELLOW);
-    sleep(1);
-    clock_gettime(CLOCK_MONOTONIC, &start);         //  获取下载开始时间
     while (1)
     {
         //  接收文件数据
-        bzero(normal_data, SEDN_RECV_BUF_SIZE);
-        int tmp_recv_size = recv(sock_fd, normal_data, SEDN_RECV_BUF_SIZE, 0);
+        bzero(buffer, len);
+        int tmp_recv_size = recv(sock_fd, buffer, len, 0);
         if (tmp_recv_size <= 0)
             break;
-        // 写入文件中
-        fwrite(normal_data, sizeof(char), tmp_recv_size, file_fp);
 
-        // 显示进度条
         recv_size += tmp_recv_size;
-        //prog_bar_show((HKA_U32) (((double)recv_size / (double)file_size) * 100));
 
         //  文件传输完成
         if (recv_size == file_size)
@@ -134,11 +103,6 @@ bool read_file(int sock_fd, char * file_name)
             break;
         }
     }
-    clock_gettime(CLOCK_MONOTONIC, &end);         //  获取下载结束时间
-    long long time_comsumption = (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_nsec - start.tv_nsec) / 1000;  //  单位为us
-    printf("time consuming: %lldus\n", time_comsumption);
-    //printf(WHITE);
-    fclose(file_fp);
     printf("Socket %d received the file successfully !!!\n", sock_fd);
     printf("\n");
     //close(sock_fd);
@@ -157,7 +121,7 @@ void start_conn(int epoll_fd, int num, const char* ip, int port)
 
     for (int i = 0; i < num; ++i)
     {
-        sleep(1);               //  延时1s，建立一个连接
+        sleep(0.5);               //  延时1s，建立一个连接
         int sock_fd = socket(PF_INET, SOCK_STREAM, 0);
         if (sock_fd < 0)
         {
@@ -186,8 +150,7 @@ int main(int argc, char* argv[])
         printf("usage: %s ip_address port_number conn_number \n", basename(argv[0]));
         return 1;
     }
-    // char *ip = "192.168.33.141";
-    // int port = 9999;
+    char buffer[65535];
 
     int epoll_fd = epoll_create(100);
     start_conn(epoll_fd, atoi(argv[3]), (argv[1]), atoi(argv[2]));
@@ -196,20 +159,27 @@ int main(int argc, char* argv[])
 
     while (1)
     {
-        int events_count = epoll_wait(epoll_fd, events, EVENTS_NUMBER, 0);    //  2000ms
+        int events_count = epoll_wait(epoll_fd, events, EVENTS_NUMBER, 2000);    //  2000ms
         for (int i = 0; i < events_count; i++)
         {
             int sock_fd = events[i].data.fd;
-            if (events[i].events & EPOLLIN)
+
+            if (events[i].events & (EPOLLERR | EPOLLRDHUP | EPOLLHUP))  
             {
-                if (!read_file(sock_fd, (char *)file_name[0].c_str()))    //  若下载文件成功，则关闭连接
+                close_conn(epoll_fd, sock_fd);
+            }
+            else if (events[i].events & EPOLLIN)
+            {
+                if (!read_file(sock_fd, buffer, 65535))    
                 {
-                    close_conn(epoll_fd, sock_fd);
-                    continue;
+                    struct epoll_event event;
+                    event.events = EPOLLIN | EPOLLET | EPOLLERR;
+                    event.data.fd = sock_fd;
+                    epoll_ctl(epoll_fd, EPOLL_CTL_MOD, sock_fd, &event);
                 }
 
                 struct epoll_event event;
-                event.events = EPOLLOUT;
+                event.events = EPOLLOUT | EPOLLET | EPOLLERR;
                 event.data.fd = sock_fd;
                 epoll_ctl(epoll_fd, EPOLL_CTL_MOD, sock_fd, &event);
             }
@@ -221,14 +191,11 @@ int main(int argc, char* argv[])
                 }
 
                 struct epoll_event event;
-                event.events = EPOLLIN;
+                event.events = EPOLLIN | EPOLLET | EPOLLERR;
                 event.data.fd = sock_fd;
                 epoll_ctl(epoll_fd, EPOLL_CTL_MOD, sock_fd, &event);
             }
-            else if (events[i].events & (EPOLLERR | EPOLLRDHUP | EPOLLHUP))
-            {
-                close_conn(epoll_fd, sock_fd);
-            }
+            
         }
     }
 }
