@@ -1,50 +1,45 @@
 ## 目录树：  
-.  
-├── Readme.txt  
-├── app  
-│   ├── demo  
-│   │   ├── Makefile  
-│   │   ├── client  
-│   │   ├── client.cpp  
-│   │   ├── testfile.txt  
-│   │   └── testfile3.txt  
-│   └── stress_test  
-│       ├── Makefile  
-│       ├── stress  
-│       ├── stress.cpp  
-│       └── testfile.txt  
-├── bin  
-│   └── server  
-├── build  
-│   └── Makefile  
-├── code  
-│   ├── common  
-│   │   └── common.h  
-│   ├── ftp_conn  
-│   │   ├── ftp_conn.cpp  
-│   │   └── ftp_conn.h  
-│   ├── ftp_server  
-│   │   ├── epoller.cpp  
-│   │   ├── epoller.h  
-│   │   ├── ftp_server.cpp  
-│   │   └── ftp_server.h  
-│   ├── main.cpp  
-│   ├── pool  
-│   │   ├── locker.h  
-│   │   ├── thread_pool.cpp  
-│   │   └── thread_pool.h  
-│   ├── progress_bar  
-│   │   ├── prog_bar.cpp  
-│   │   └── prog_bar.h  
-│   ├── timer  
-│   │   ├── heap_timer.cpp  
-│   │   └── heap_timer.h  
-│   └── type  
-│       └── basic_type.h  
-└── data  
-    ├── testfile.txt  
-    ├── testfile2.txt  
-    └── testfile3.txt  
+.
+├── LICENSE
+├── README.md
+├── app
+│   └── demo
+│       ├── Makefile
+│       ├── client
+│       └── client.cpp
+├── bin
+│   └── server
+├── build
+│   └── Makefile
+├── code
+│   ├── common
+│   │   └── common.h
+│   ├── ftp_conn
+│   │   ├── ftp_conn.cpp
+│   │   └── ftp_conn.h
+│   ├── ftp_server
+│   │   ├── epoller.cpp
+│   │   ├── epoller.h
+│   │   ├── ftp_server.cpp
+│   │   └── ftp_server.h
+│   ├── main.cpp
+│   ├── pool
+│   │   ├── locker.h
+│   │   ├── thread_pool.cpp
+│   │   └── thread_pool.h
+│   ├── progress_bar
+│   │   ├── prog_bar.cpp
+│   │   └── prog_bar.h
+│   ├── timer
+│   │   ├── heap_timer.cpp
+│   │   └── heap_timer.h
+│   └── type
+│       └── basic_type.h
+└── data
+    ├── testfile.txt
+    ├── testfile2.txt
+    └── testfile3.txt
+
   
   
 ## Linux/C++实现文件下载服务器：  
