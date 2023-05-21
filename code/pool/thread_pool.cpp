@@ -92,7 +92,7 @@ void ThreadPool::run()
 
         auto task = std::move(work_queue_.front());  
         work_queue_.pop();                  //  任务出队 
-        task();                             //  执行队列中的任务（往队列添加什么函数，就会执行什么函数）
         queue_locker_.unlock();             //  解锁
+        task();                             //  执行队列中的任务（往队列添加什么函数，就会执行什么函数）
     }
 }

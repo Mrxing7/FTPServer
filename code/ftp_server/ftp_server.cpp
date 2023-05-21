@@ -280,6 +280,10 @@ HKA_VOID FTPServer::on_read_(FTPConn *client)       //  在子线程中处理
 HKA_VOID FTPServer::on_write_(FTPConn *client)      //  在子线程中处理
 {
     assert(client);
+    if(client->get_is_transport() == true)
+    {
+        return;
+    }
 
     //  传输文件
     client->set_is_transport(true);                 //  设置传输文件标志（正在传输文件）

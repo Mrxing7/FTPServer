@@ -58,6 +58,7 @@ private:
     long long file_size;                //  文件大小
     HKA_BOOL is_close;                  //  是否断开连接
     HKA_BOOL is_transport;              //  是否在传输文件
+    HKA_BOOL is_first_transport;        //  是否第一次传输文件
 };
 
 #endif // end of _FTP_CONN_H_

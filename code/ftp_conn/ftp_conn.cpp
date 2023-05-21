@@ -19,6 +19,7 @@ FTPConn::FTPConn(HKA_S32 buffer_size)
     client_addr_ = { 0 };
     is_close = true;
     is_transport = false;
+    is_first_transport = true;
     restart_file_pos = 0;
     file_size = 0;
     recv_buffer_.resize(buffer_size,'\0');
@@ -53,6 +54,7 @@ HKA_VOID FTPConn::init_(HKA_S32 fd, const sockaddr_in& client_addr)
     fd_ = fd;
     is_close = false;
     is_transport = false;
+    is_first_transport = true;
     restart_file_pos = 0;
     file_size = 0;
     recv_buffer_.resize(BUFFER_SIZE,'\0');
@@ -222,18 +224,25 @@ HKA_BOOL FTPConn::send_file_(HKA_S32 file_fd)
             lseek(file_fd, offset, SEEK_SET);
         }
 
-        //  发送文件的大小
-        sprintf((char *)&send_buffer_[0], "%lld", file_size);
-        int send_size = send_();        //  将send_buffer_内容发送给客户端
-        if (send_size < 0)
+        //  判断是否是第一次传输
+        if(is_first_transport == true)
         {
-            return send_size;
+            //  发送文件的大小
+            sprintf((char *)&send_buffer_[0], "%lld", file_size);
+            int send_size = send_();        //  将send_buffer_内容发送给客户端
+            if (send_size < 0)
+            {
+                return send_size;
+            }
+            is_first_transport = false;
         }
         
         //  发送文件内容
         int block_size = 0;
+        int send_size = 0;
         // const int fix_size = 65536;
         char *client_ip = inet_ntoa(client_addr_.sin_addr);
+        printf("file_size: %d\n", file_size);
         while(file_size > 0)
         {
             //block_size = (file_size > fix_size) ? fix_size : file_size;   //读取字节数
@@ -242,10 +251,13 @@ HKA_BOOL FTPConn::send_file_(HKA_S32 file_fd)
 
             if (send_size < 0)
             {
+                is_first_transport = false;
+                is_transport = false;
                 return false;
             }
 
             file_size -= send_size;
+            restart_file_pos += send_size;
             printf("Send %d bytes file to %s:%d \n", send_size, client_ip, client_addr_.sin_port);
         }
         close(file_fd);             //  关闭文件描述符
