@@ -1,50 +1,45 @@
 ## 目录树：  
-.  
-├── Readme.txt  
-├── app  
-│   ├── demo  
-│   │   ├── Makefile  
-│   │   ├── client  
-│   │   ├── client.cpp  
-│   │   ├── testfile.txt  
-│   │   └── testfile3.txt  
-│   └── stress_test  
-│       ├── Makefile  
-│       ├── stress  
-│       ├── stress.cpp  
-│       └── testfile.txt  
-├── bin  
-│   └── server  
-├── build  
-│   └── Makefile  
-├── code  
-│   ├── common  
-│   │   └── common.h  
-│   ├── ftp_conn  
-│   │   ├── ftp_conn.cpp  
-│   │   └── ftp_conn.h  
-│   ├── ftp_server  
-│   │   ├── epoller.cpp  
-│   │   ├── epoller.h  
-│   │   ├── ftp_server.cpp  
-│   │   └── ftp_server.h  
-│   ├── main.cpp  
-│   ├── pool  
-│   │   ├── locker.h  
-│   │   ├── thread_pool.cpp  
-│   │   └── thread_pool.h  
-│   ├── progress_bar  
-│   │   ├── prog_bar.cpp  
-│   │   └── prog_bar.h  
-│   ├── timer  
-│   │   ├── heap_timer.cpp  
-│   │   └── heap_timer.h  
-│   └── type  
-│       └── basic_type.h  
-└── data  
-    ├── testfile.txt  
-    ├── testfile2.txt  
-    └── testfile3.txt  
+.
+├── LICENSE
+├── README.md
+├── app
+│   └── demo
+│       ├── Makefile
+│       ├── client
+│       └── client.cpp
+├── bin
+│   └── server
+├── build
+│   └── Makefile
+├── code
+│   ├── common
+│   │   └── common.h
+│   ├── ftp_conn
+│   │   ├── ftp_conn.cpp
+│   │   └── ftp_conn.h
+│   ├── ftp_server
+│   │   ├── epoller.cpp
+│   │   ├── epoller.h
+│   │   ├── ftp_server.cpp
+│   │   └── ftp_server.h
+│   ├── main.cpp
+│   ├── pool
+│   │   ├── locker.h
+│   │   ├── thread_pool.cpp
+│   │   └── thread_pool.h
+│   ├── progress_bar
+│   │   ├── prog_bar.cpp
+│   │   └── prog_bar.h
+│   ├── timer
+│   │   ├── heap_timer.cpp
+│   │   └── heap_timer.h
+│   └── type
+│       └── basic_type.h
+└── data
+    ├── testfile.txt
+    ├── testfile2.txt
+    └── testfile3.txt
+
   
   
 ## Linux/C++实现文件下载服务器：  
@@ -57,13 +52,6 @@
 *    文件路径：app/demo/  
 *    可执行make命令进行编译  
 *    文件下载命令：./client 192.168.43.254 9876 testfile.txt  
-*    注：需要将ip地址需更换为./server程序运行的主机ip  
-
-压力测试程序：  
-*    路径：app/stress/  
-*    可执行make命令进行编译  
-*    命令：./stress 192.168.43.254 9876 100  
-*    其中100表示客户端的数量  
 *    注：需要将ip地址需更换为./server程序运行的主机ip  
 
 服务端功能:  
